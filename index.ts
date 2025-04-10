@@ -37,8 +37,9 @@ async function main() {
 
         const startTime = new Date().getTime();
         const submitPromise = new Promise((resolve, reject) => {
-            api.rpc.author
-                .submitAndWatchExtrinsic(signed, (status) => {
+            let unsub: any = undefined;
+            unsub = api.rpc.author
+                .submitAndWatchExtrinsic(signed, async (status) => {
                     const spendTime = new Date().getTime() - startTime;
                     console.log(
                         `[TxHash: ${txHash} ,SpendTime: ${spendTime}ms`,
@@ -49,11 +50,13 @@ async function main() {
                             console.log(
                                 `[TxHash: ${txHash} ,Finalized : ${spendTime}ms`,
                             );
+                            await unsub;
                             resolve(status);
                         } else if (status.isInBlock) {
                             console.log(
                                 `[TxHash: ${txHash} ,InBlock : ${spendTime}ms`,
                             );
+                            await unsub;
                             resolve(status);
                         }
                     }
@@ -62,9 +65,10 @@ async function main() {
                     console.error(`[doSubmit] failed TxHash: ${txHash}`, error);
                     reject({ message: error.message });
                 });
+            return unsub;
         });
 
-        await submitPromise;
+        let res = await submitPromise;
     } catch (error) {
         console.log(error);
     }
@@ -72,10 +76,12 @@ async function main() {
 
 let finished = false;
 main().then(() => {
+    console.log("Finished");
     finished = true;
 });
 
 let timeout = setInterval(() => {
+    console.log(finished);
     if (finished) {
         clearInterval(timeout);
     }
