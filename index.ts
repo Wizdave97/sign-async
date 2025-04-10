@@ -29,8 +29,6 @@ async function main() {
     // Set up BOB account from keyring
     const keyring = new Keyring({ type: "sr25519" });
     const bob = keyring.addFromUri(secret_key);
-    // Implement the Signer interface
-    // const signer: Signer = createKeyringPairSigner(bob)
 
     try {
         let tx = api.tx.system.remarkWithEvent("Hello");
